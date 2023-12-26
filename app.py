@@ -1,3 +1,4 @@
+%%writefile app.py
 import streamlit as st
 import pandas as pd
 import numpy as np
@@ -165,15 +166,15 @@ with Exploration:
 ####################################################
             col_11 , col_12 , col_13= st.columns([10 , 10 , 10])
             with col_11:
-                st.markdown('✔️ (cnt) vs (casual) Grouping_by [season]')
+                st.markdown('✔️ (cnt) vs (registered) Grouping_by [season]')
                 fig_11 = px.scatter(df_new , x = 'registered' , y = 'cnt' , color = 'season')
                 st.plotly_chart(fig_11 , use_container_width=True,theme="streamlit")
             with col_12:
-                st.markdown('✔️ (cnt) vs (casual) Grouping_by [weathersit]')
+                st.markdown('✔️ (cnt) vs (registered) Grouping_by [weathersit]')
                 fig_12 = px.scatter(df_new , x = 'registered' , y = 'cnt' , color = 'weathersit')
                 st.plotly_chart(fig_12 , use_container_width=True,theme="streamlit")
             with col_13:
-                st.markdown('✔️ (cnt) vs (casual) Grouping_by [time_preiod]')
+                st.markdown('✔️ (cnt) vs (registered) Grouping_by [time_preiod]')
                 fig_13 = px.scatter(df_new , x = 'registered' , y = 'cnt' , color = 'time_preiod')
                 st.plotly_chart(fig_13 , use_container_width=True,theme="streamlit")
 
@@ -181,7 +182,39 @@ with Exploration:
 with Insight:
     with st.container():
         st.subheader("🚩 DATA UNDERSTANDING & INSIGHTS...")
-        st.write("avg (registered, casual, cnt) per year")
+        Totals_Report = []
+        for i in ['sum','mean','count']:
+            Totals = {'name':['casual' , 'registered' , 'cnt'],
+                '2011':[df_new[(df_new.yr == 2011) & (df_new.casual != 0)].casual.agg(i).round(2), 
+                        df_new[(df_new.yr == 2011) & (df_new.registered != 0)].registered.agg(i).round(2),
+                        df_new[(df_new.yr == 2011) & (df_new.cnt != 0)].cnt.agg(i).round(2) ] ,
+                '2012':[df_new[(df_new.yr == 2012) & (df_new.casual != 0)].casual.agg(i).round(2), 
+                        df_new[(df_new.yr == 2012) & (df_new.registered != 0)].registered.agg(i).round(2),
+                        df_new[(df_new.yr == 2012) & (df_new.cnt != 0)].cnt.agg(i).round(2)] }
+            Totals_Report.append(Totals)
+        # DataFrames
+        Totals_Report_sum = pd.DataFrame(Totals_Report[0])
+        Totals_Report_avg = pd.DataFrame(Totals_Report[1]) 
+        Totals_Report_count = pd.DataFrame(Totals_Report[2]) 
+    col_i_1 , col_i_2 , col_i_3 = st.columns([40 , 40 , 40])
+    with col_i_1:
+        st.write('✔️ Total Rents')
+        fig_S = px.histogram(Totals_Report_sum,x='name',y=['2011','2012'],barmode='group',text_auto=True,width=900,height=500,
+                 title = f'Total of Casual, Registred, cnt')
+        st.plotly_chart(fig_S , use_container_width=True,theme="streamlit")
+    with col_i_2:
+        st.write('✔️ Avg Rents')
+        fig_V = px.histogram(Totals_Report_avg,x='name',y=['2011','2012'],barmode='group',text_auto=True,width=900,height=500,
+                 title = f'Avg of Casual, Registred, cnt')
+        st.plotly_chart(fig_V , use_container_width=True,theme="streamlit")
+    with col_i_3:
+        st.write('✔️ Count Rents')
+        fig_C = px.histogram(Totals_Report_count,x='name',y=['2011','2012'],barmode='group',text_auto=True,width=900,height=500,
+                 title = f'Count of Casual, Registred, cnt')
+        st.plotly_chart(fig_C , use_container_width=True,theme="streamlit")
+
+    with st.container():
+        st.write("✔️ avg (registered, casual, cnt) per year")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             msk = df_new.groupby(['yr']).agg({'casual':'mean' , 'registered':'mean', 'cnt':'mean'}).reset_index()
@@ -196,7 +229,7 @@ with Insight:
             fig = px.pie(msk , names = 'yr' , values = 'cnt' ,title = 'avg (cnt) per year' ).update_traces(textinfo='percent+value')
             st.plotly_chart(fig , use_container_width=True,theme="streamlit")
     with st.container():
-        st.write("avg (registered, casual, cnt) per season")
+        st.write("✔️ avg (registered, casual, cnt) per season")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             Var = 'season'
@@ -212,7 +245,7 @@ with Insight:
             fig = px.pie(msk , names = Var , values = 'cnt' ,title = f'avg (cnt) per {Var}' ).update_traces(textinfo='percent+value')
             st.plotly_chart(fig , use_container_width=True,theme="streamlit")
     with st.container():
-        st.write("avg (registered, casual, cnt) per mnth")
+        st.write("✔️ avg (registered, casual, cnt) per mnth")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             Var = 'mnth'
@@ -228,7 +261,7 @@ with Insight:
             fig = px.bar(msk , x = Var , y = 'cnt' ,title = f'avg (cnt) per {Var}',text_auto=True,color='cnt')
             st.plotly_chart(fig , use_container_width=True,theme="streamlit")
     with st.container():
-        st.write("avg (registered, casual, cnt) per time_preiod")
+        st.write("✔️ avg (registered, casual, cnt) per time_preiod")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             Var = 'time_preiod'
@@ -244,7 +277,7 @@ with Insight:
             fig = px.bar(msk , x = Var , y = 'cnt' ,title = f'avg (cnt) per {Var}',text_auto=True,color='cnt')
             st.plotly_chart(fig , use_container_width=True,theme="streamlit")         
     with st.container():
-        st.write("avg (registered, casual, cnt) per weathersit")
+        st.write("✔️ avg (registered, casual, cnt) per weathersit")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             Var = 'weathersit'
@@ -260,7 +293,7 @@ with Insight:
             fig = px.bar(msk , x = Var , y = 'cnt' ,title = f'avg (cnt) per {Var}',text_auto=True,color='cnt')
             st.plotly_chart(fig , use_container_width=True,theme="streamlit")        
     with st.container():
-        st.write("avg (registered, casual, cnt) per weekday")
+        st.write("✔️ avg (registered, casual, cnt) per weekday")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             Var = 'weekday'
@@ -276,7 +309,7 @@ with Insight:
             fig = px.bar(msk , x = Var , y = 'cnt' ,title = f'avg (cnt) per {Var}',text_auto=True,color='cnt')
             st.plotly_chart(fig , use_container_width=True,theme="streamlit")
     with st.container():
-        st.write("avg (registered, casual, cnt) per hour")
+        st.write("✔️ avg (registered, casual, cnt) per hour")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             Var = 'hr'
@@ -292,7 +325,7 @@ with Insight:
             fig = px.bar(msk , x = Var , y = 'cnt' ,title = f'avg (cnt) per {Var}',text_auto=True,color='cnt')
             st.plotly_chart(fig , use_container_width=True,theme="streamlit")
     with st.container():
-        st.write("avg (registered, casual, cnt) per workingday")
+        st.write("✔️ avg (registered, casual, cnt) per workingday")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             Var = 'workingday'
@@ -308,7 +341,7 @@ with Insight:
             fig = px.bar(msk , x = Var , y = 'cnt' ,title = f'avg (cnt) per {Var}',text_auto=True,color='cnt')
             st.plotly_chart(fig , use_container_width=True,theme="streamlit")
     with st.container():
-        st.write("avg (registered, casual, cnt) per holiday")
+        st.write("✔️ avg (registered, casual, cnt) per holiday")
         col_i_1 , col_i_2 , col_i_3 = st.columns([30 , 30 , 30])
         with col_i_1:
             Var = 'holiday'
@@ -448,7 +481,7 @@ with Insight:
 
     with st.container():
         st.success("""
-        - From the above graphs we can see that:
+        - ✔️ From the above graphs we can see that:
             * Overall: Casual is less than registered in the two years.
                 * That can help us in (Operations Capacity, Cost, Budgeting, etc.) Planning to Considerate to increase about 40% to 60% as Casual rate from Register Daily/Monthly/Yearly Rate.
             * Seasons: Fall reach 31% of Avg Total Rents, then summer 27%, Then Winter 26%.
